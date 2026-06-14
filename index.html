@@ -1,48 +1,1395 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>TheSketchyApp - For Mobile Devices </title>
-    <link rel="stylesheet" type="text/css" href="style.css">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Veridian — AI Audit Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --ink: #0E0E0C;
+  --paper: #F6F4EF;
+  --warm: #EDEAE2;
+  --rule: rgba(14,14,12,0.09);
+  --muted: #6E6B62;
+  --green: #0B6E4F;
+  --green-bg: #D8F0E7;
+  --amber: #7A4E0D;
+  --amber-bg: #FDF0D8;
+  --red: #8B2020;
+  --red-bg: #FAEAEA;
+  --blue: #1A4FBF;
+  --blue-bg: #E4ECFB;
+  --sidebar-w: 220px;
+  --topbar-h: 56px;
+  --f-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--f-body);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden;height:100vh;display:flex;flex-direction:column;}
+button{cursor:pointer;font-family:var(--f-body);}
+input,textarea,select{font-family:var(--f-body);}
+
+/* TOPBAR */
+.topbar{
+  height:var(--topbar-h);flex-shrink:0;
+  background:#fff;border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;z-index:100;
+}
+.topbar-logo{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:26px;height:26px;border:1.5px solid var(--ink);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.logo-mark::after{content:'';width:7px;height:7px;background:var(--green);border-radius:50%;}
+.logo-text{font-family:var(--f-mono);font-size:0.875rem;font-weight:500;letter-spacing:0.04em;}
+.topbar-right{display:flex;align-items:center;gap:1rem;}
+.status-pill{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:0.6875rem;color:var(--muted);letter-spacing:0.06em;}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.topbar-user{width:30px;height:30px;border-radius:50%;background:var(--warm);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:500;color:var(--muted);}
+
+/* LAYOUT */
+.app-body{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:#fff;border-right:1px solid var(--rule);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  padding:1rem 0;
+}
+.nav-section-label{font-family:var(--f-mono);font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);padding:0.75rem 1.25rem 0.375rem;}
+.nav-item{
+  display:flex;align-items:center;gap:0.625rem;
+  padding:0.5rem 1.25rem;
+  font-size:0.8125rem;font-weight:400;
+  color:var(--muted);cursor:pointer;
+  border-radius:0;transition:all 0.15s;
+  border-left:2px solid transparent;
+  user-select:none;
+}
+.nav-item:hover{background:var(--paper);color:var(--ink);}
+.nav-item.active{background:var(--paper);color:var(--ink);border-left-color:var(--green);font-weight:500;}
+.nav-icon{width:16px;height:16px;opacity:0.6;flex-shrink:0;}
+.nav-item.active .nav-icon{opacity:1;}
+.nav-badge{margin-left:auto;font-family:var(--f-mono);font-size:0.6rem;padding:2px 6px;border-radius:3px;background:var(--red-bg);color:var(--red);}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;background:var(--paper);}
+.page{display:none;padding:2rem;max-width:1200px;}
+.page.active{display:block;}
+
+/* COMMON */
+.page-title{font-size:1.125rem;font-weight:500;margin-bottom:0.25rem;}
+.page-sub{font-size:0.8125rem;color:var(--muted);font-weight:300;margin-bottom:1.75rem;}
+.card{background:#fff;border:1px solid var(--rule);border-radius:var(--radius-lg);padding:1.25rem;}
+.card-title{font-size:0.8125rem;font-weight:500;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem;}
+.mono{font-family:var(--f-mono);}
+.muted{color:var(--muted);}
+
+/* STAT CARDS */
+.stat-card{background:#fff;border:1px solid var(--rule);border-radius:var(--radius-lg);padding:1.125rem 1.25rem;}
+.stat-label{font-family:var(--f-mono);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+.stat-val{font-size:1.625rem;font-weight:500;line-height:1;margin-bottom:0.25rem;}
+.stat-sub{font-size:0.75rem;color:var(--muted);font-weight:300;}
+
+/* PILLS / BADGES */
+.pill{font-family:var(--f-mono);font-size:0.6875rem;padding:2px 8px;border-radius:3px;font-weight:500;}
+.pill-green{background:var(--green-bg);color:var(--green);}
+.pill-amber{background:var(--amber-bg);color:var(--amber);}
+.pill-red{background:var(--red-bg);color:var(--red);}
+.pill-blue{background:var(--blue-bg);color:var(--blue);}
+.pill-muted{background:var(--warm);color:var(--muted);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:0.5rem 1rem;border-radius:var(--radius);font-size:0.8125rem;font-weight:500;border:1px solid var(--rule);background:#fff;color:var(--ink);cursor:pointer;transition:all 0.15s;font-family:var(--f-mono);letter-spacing:0.02em;}
+.btn:hover{background:var(--warm);}
+.btn-primary{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.btn-primary:hover{background:#2a2a28;}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green);}
+.btn-green:hover{background:#095e43;}
+.btn-sm{padding:0.325rem 0.75rem;font-size:0.75rem;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* TRAIL ITEMS */
+.trail-item{display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem 0;border-bottom:1px solid var(--rule);}
+.trail-item:last-child{border-bottom:none;}
+.trail-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.td-green{background:var(--green);}
+.td-amber{background:#C97A20;}
+.td-red{background:var(--red);}
+.td-muted{background:#BCBAB2;}
+.trail-body{flex:1;min-width:0;}
+.trail-id{font-family:var(--f-mono);font-size:0.75rem;font-weight:500;margin-bottom:2px;}
+.trail-desc{font-size:0.75rem;color:var(--muted);line-height:1.5;font-weight:300;}
+.trail-time{font-family:var(--f-mono);font-size:0.6875rem;color:var(--muted);white-space:nowrap;}
+
+/* SCORE BAR */
+.score-row{display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0;border-bottom:1px solid var(--rule);}
+.score-row:last-child{border-bottom:none;}
+.score-name{font-size:0.8125rem;width:140px;flex-shrink:0;}
+.bar-track{flex:1;height:5px;background:var(--warm);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.6s ease;}
+.score-num{font-family:var(--f-mono);font-size:0.8125rem;font-weight:500;width:30px;text-align:right;}
+
+/* FORM ELEMENTS */
+.field{margin-bottom:1rem;}
+.field label{display:block;font-size:0.8125rem;font-weight:500;margin-bottom:0.375rem;}
+.field input,.field textarea,.field select{
+  width:100%;padding:0.5rem 0.75rem;
+  border:1px solid var(--rule);border-radius:var(--radius);
+  font-size:0.875rem;background:#fff;color:var(--ink);
+  outline:none;transition:border 0.15s;font-family:var(--f-body);
+}
+.field textarea{resize:vertical;min-height:100px;font-size:0.8125rem;line-height:1.6;}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--ink);}
+.field-hint{font-size:0.75rem;color:var(--muted);margin-top:0.25rem;font-weight:300;}
+
+/* AI RESPONSE BOX */
+.ai-box{background:var(--paper);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:1.25rem;font-size:0.875rem;line-height:1.7;font-weight:300;white-space:pre-wrap;min-height:80px;position:relative;}
+.ai-thinking{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:0.8125rem;}
+.thinking-dots{display:flex;gap:4px;}
+.thinking-dots span{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:blink 1.2s ease infinite;}
+.thinking-dots span:nth-child(2){animation-delay:0.2s;}
+.thinking-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,80%,100%{opacity:0.2;}40%{opacity:1;}}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:0.8125rem;}
+.data-table th{font-family:var(--f-mono);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:0.625rem 1rem;border-bottom:1px solid var(--rule);font-weight:400;background:#fff;}
+.data-table td{padding:0.75rem 1rem;border-bottom:1px solid var(--rule);vertical-align:middle;}
+.data-table tbody tr{background:#fff;transition:background 0.12s;}
+.data-table tbody tr:hover{background:var(--paper);}
+.data-table tbody tr:last-child td{border-bottom:none;}
+
+/* REPORT SECTION */
+.report-block{border:1px solid var(--rule);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1rem;}
+.report-header{background:var(--warm);padding:0.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.report-header-title{font-family:var(--f-mono);font-size:0.75rem;font-weight:500;letter-spacing:0.04em;}
+.report-body{padding:1.25rem;background:#fff;font-size:0.875rem;line-height:1.7;font-weight:300;white-space:pre-wrap;}
+
+/* FAILURE CARD */
+.fail-card{display:flex;gap:0.875rem;align-items:flex-start;padding:0.875rem;border:1px solid var(--rule);border-radius:var(--radius);background:#fff;margin-bottom:0.625rem;}
+.fail-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;}
+.fail-info{flex:1;}
+.fail-title{font-size:0.8125rem;font-weight:500;margin-bottom:2px;}
+.fail-desc{font-size:0.75rem;color:var(--muted);font-weight:300;line-height:1.5;}
+
+/* CHART CONTAINER */
+.chart-wrap{position:relative;height:200px;}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--rule);margin:1.25rem 0;}
+
+/* SCROLLABLE TRAIL */
+.trail-scroll{max-height:340px;overflow-y:auto;}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:1.5rem;}
+.tab{padding:0.625rem 1.125rem;font-size:0.8125rem;font-weight:400;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}
+.tab.active{color:var(--ink);border-bottom-color:var(--green);font-weight:500;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:0.5rem;}
+.toast{background:var(--ink);color:var(--paper);padding:0.75rem 1rem;border-radius:var(--radius);font-size:0.8125rem;font-weight:400;display:flex;align-items:center;gap:8px;animation:slideIn 0.25s ease;max-width:320px;}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted);}
+.empty-icon{font-size:2rem;margin-bottom:0.75rem;opacity:0.4;}
+.empty-title{font-size:0.9375rem;font-weight:500;margin-bottom:0.375rem;color:var(--ink);}
+.empty-sub{font-size:0.8125rem;font-weight:300;}
+</style>
 </head>
+<body>
 
-<body class="body_background">
-
-    <center>
-        <div>
-            <span><h1>TheSketchyApp</h1>
-                <h4> *For this to work please go to mobile view*</h4>
-               
-            </span>
-        </div>
-        <canvas id="myCanvas" height="660" width="1000"></canvas>
-
-
-
-        <br>
-
-
-
-        <br>
-        <div class="edits">
-            <span>Color - </span> <input type=" text " id="color"></span> <br>
-
-            <span>Line Width - </span> <input type=" number " id="width_of_line">
-            </span> <br>
-
-
-
-            <button onclick="clearArea(); ">Clear Area</button> </body>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-mark"></div>
+    <span class="logo-text">Veridian</span>
+    <span style="font-family:var(--f-mono);font-size:0.6875rem;color:var(--muted);margin-left:0.5rem;letter-spacing:0.04em">/ audit platform</span>
+  </div>
+  <div class="topbar-right">
+    <div class="status-pill">
+      <div class="pulse"></div>
+      <span id="decision-counter">0 decisions audited</span>
+    </div>
+    <div class="topbar-user">V</div>
+  </div>
 </div>
 
-</center>
+<!-- APP BODY -->
+<div class="app-body">
 
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" onclick="navigate('dashboard')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      Dashboard
+    </div>
 
-<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="plasmicrays" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
- 
+    <div class="nav-section-label">Core tools</div>
+    <div class="nav-item" onclick="navigate('logger')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+      Decision logger
+    </div>
+    <div class="nav-item" onclick="navigate('failures')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l6 11H2L8 2z"/><path d="M8 7v3M8 11.5v.5"/></svg>
+      Failure detector
+      <span class="nav-badge" id="fail-badge">0</span>
+    </div>
+    <div class="nav-item" onclick="navigate('compliance')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1l5 2v5c0 3-2.5 5.5-5 7C5.5 13.5 3 11 3 8V3l5-2z"/></svg>
+      Compliance scorer
+    </div>
+    <div class="nav-item" onclick="navigate('report')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 1h6l3 3v11H4V1z"/><path d="M10 1v3h3"/><path d="M6 7h5M6 10h3"/></svg>
+      Insurer report
+    </div>
 
+    <div class="nav-section-label">Analysis</div>
+    <div class="nav-item" onclick="navigate('analyze')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4"/><path d="M10.5 10.5l3 3"/></svg>
+      Analyze decision
+    </div>
+    <div class="nav-item" onclick="navigate('trail')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="4" r="1.5"/><circle cx="13" cy="8" r="1.5"/><circle cx="8" cy="12" r="1.5"/><path d="M4.5 7.5l2-2M9.5 5.5l2 2M11.5 9.5l-2 2M6.5 10.5l-2-2"/></svg>
+      Trail viewer
+    </div>
 
+    <div style="flex:1"></div>
+    <div style="padding:1rem 1.25rem;border-top:1px solid var(--rule);">
+      <div style="font-family:var(--f-mono);font-size:0.6875rem;color:var(--muted);margin-bottom:4px;">API key</div>
+      <div style="font-family:var(--f-mono);font-size:0.6875rem;color:var(--green);">● Connected</div>
+    </div>
+  </nav>
 
+  <!-- MAIN CONTENT -->
+  <main class="main">
 
-<script src="script.js "></script>
+    <!-- ═══════════ DASHBOARD ═══════════ -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Real-time overview of your AI audit layer.</div>
 
+      <div class="grid4" style="margin-bottom:1rem;">
+        <div class="stat-card">
+          <div class="stat-label">Audit score</div>
+          <div class="stat-val" id="dash-score">—</div>
+          <div class="stat-sub">across all dimensions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Decisions logged</div>
+          <div class="stat-val" id="dash-decisions">0</div>
+          <div class="stat-sub">this session</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Failure modes</div>
+          <div class="stat-val" id="dash-failures" style="color:var(--red)">0</div>
+          <div class="stat-sub">detected</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Insurance readiness</div>
+          <div class="stat-val" id="dash-ready" style="font-size:1rem;padding-top:6px;">Log decisions →</div>
+          <div class="stat-sub">run compliance scorer</div>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-bottom:1rem;">
+        <div class="card">
+          <div class="card-title">
+            Decision trail
+            <span class="pill pill-green" id="trail-live-badge">Live</span>
+          </div>
+          <div class="trail-scroll" id="dash-trail">
+            <div class="empty">
+              <div class="empty-icon">📋</div>
+              <div class="empty-title">No decisions logged yet</div>
+              <div class="empty-sub">Use the Decision logger to start auditing</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Decisions over time</div>
+          <div class="chart-wrap">
+            <canvas id="dash-chart"></canvas>
+          </div>
+          <div style="margin-top:1rem;">
+            <div class="card-title">Compliance scores</div>
+            <div id="dash-scores-preview">
+              <div style="font-size:0.8125rem;color:var(--muted);font-weight:300;">Run the compliance scorer to see scores here.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          Active failure modes
+          <button class="btn btn-sm" onclick="navigate('failures')">View all →</button>
+        </div>
+        <div id="dash-fail-preview">
+          <div style="font-size:0.8125rem;color:var(--muted);font-weight:300;">No failures detected. Log decisions to begin monitoring.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ DECISION LOGGER ═══════════ -->
+    <div id="page-logger" class="page">
+      <div class="page-title">Decision logger</div>
+      <div class="page-sub">Log AI decisions manually or paste raw model output for Claude to analyze and structure.</div>
+
+      <div class="grid2">
+        <div>
+          <div class="card" style="margin-bottom:1rem;">
+            <div class="card-title">Log a decision</div>
+            <div class="field">
+              <label>Model name / version</label>
+              <input type="text" id="log-model" placeholder="e.g. loan-approval-v2.3"/>
+            </div>
+            <div class="field">
+              <label>Decision type</label>
+              <select id="log-type">
+                <option value="loan_approval">Loan approval</option>
+                <option value="fraud_detection">Fraud detection</option>
+                <option value="medical_triage">Medical triage</option>
+                <option value="hiring_screen">Hiring screening</option>
+                <option value="pricing">Pricing recommendation</option>
+                <option value="content_moderation">Content moderation</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Input data / context</label>
+              <textarea id="log-input" placeholder="Describe the input data or paste the model's input here..."></textarea>
+            </div>
+            <div class="field">
+              <label>Model output / decision</label>
+              <textarea id="log-output" placeholder="What did the model decide? Paste the raw output here..."></textarea>
+            </div>
+            <div class="grid2">
+              <div class="field">
+                <label>Confidence score</label>
+                <input type="number" id="log-confidence" placeholder="0–100" min="0" max="100"/>
+              </div>
+              <div class="field">
+                <label>Decision ID (optional)</label>
+                <input type="text" id="log-id" placeholder="auto-generated"/>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="logDecision()" id="log-btn">Log & audit with Claude →</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:1rem;">
+            <div class="card-title">Claude's audit analysis</div>
+            <div class="ai-box" id="log-ai-output">
+              <span style="color:var(--muted);font-size:0.8125rem;font-weight:300;">Claude will analyze the decision for attribution, risk flags, and compliance relevance once you submit.</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Structured audit record</div>
+            <div id="log-structured" style="font-size:0.8125rem;color:var(--muted);font-weight:300;">The parsed audit record will appear here after logging.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-title">
+          Logged decisions this session
+          <button class="btn btn-sm" onclick="clearLog()">Clear log</button>
+        </div>
+        <div id="log-table-wrap">
+          <div class="empty">
+            <div class="empty-icon">📝</div>
+            <div class="empty-title">No decisions logged yet</div>
+            <div class="empty-sub">Fill the form above to log your first AI decision</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ FAILURE DETECTOR ═══════════ -->
+    <div id="page-failures" class="page">
+      <div class="page-title">Failure detector</div>
+      <div class="page-sub">Describe a model behavior and Claude will classify the failure mode, assess severity, and recommend mitigations.</div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Describe the behavior</div>
+          <div class="field">
+            <label>Model / system</label>
+            <input type="text" id="fail-model" placeholder="e.g. fraud-detection-v1.9"/>
+          </div>
+          <div class="field">
+            <label>What did you observe?</label>
+            <textarea id="fail-description" style="min-height:140px;" placeholder="Describe the unexpected or problematic behavior in detail. Include inputs, outputs, frequency, and any patterns you've noticed..."></textarea>
+          </div>
+          <div class="field">
+            <label>When did it start?</label>
+            <input type="text" id="fail-when" placeholder="e.g. after last week's retrain, always, randomly..."/>
+          </div>
+          <button class="btn btn-primary" onclick="detectFailure()" id="fail-btn">Classify failure with Claude →</button>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:1rem;">
+            <div class="card-title">Claude's failure classification</div>
+            <div class="ai-box" id="fail-ai-output">
+              <span style="color:var(--muted);font-size:0.8125rem;font-weight:300;">Claude will classify the failure mode, assign severity, and recommend mitigations.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-title">
+          Detected failure modes
+          <span class="pill pill-red" id="fail-count-badge">0 active</span>
+        </div>
+        <div id="fail-list">
+          <div class="empty">
+            <div class="empty-icon">🛡️</div>
+            <div class="empty-title">No failures detected yet</div>
+            <div class="empty-sub">Describe an observed model behavior above to classify it</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ COMPLIANCE SCORER ═══════════ -->
+    <div id="page-compliance" class="page">
+      <div class="page-title">Compliance scorer</div>
+      <div class="page-sub">Describe your AI system and Claude will score it across the six dimensions required for liability insurance eligibility.</div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">AI system profile</div>
+          <div class="field">
+            <label>System name</label>
+            <input type="text" id="comp-name" placeholder="e.g. Meridian Loan Approval System"/>
+          </div>
+          <div class="field">
+            <label>Industry / use case</label>
+            <select id="comp-industry">
+              <option value="financial_services">Financial services</option>
+              <option value="healthcare">Healthcare & diagnostics</option>
+              <option value="hiring">Hiring & HR</option>
+              <option value="insurance">Insurance underwriting</option>
+              <option value="legal">Legal & compliance</option>
+              <option value="autonomous">Autonomous systems</option>
+              <option value="government">Government & public sector</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>What decisions does the system make?</label>
+            <textarea id="comp-decisions" placeholder="Describe what the AI decides, who it affects, and at what volume..."></textarea>
+          </div>
+          <div class="field">
+            <label>What monitoring or logging exists today?</label>
+            <textarea id="comp-monitoring" placeholder="Describe any existing audit trails, monitoring, explainability tools, or bias testing you already have..."></textarea>
+          </div>
+          <div class="field">
+            <label>Biggest known risk or concern</label>
+            <input type="text" id="comp-risk" placeholder="e.g. model drift, bias in demographic X, no explainability layer..."/>
+          </div>
+          <button class="btn btn-primary" onclick="scoreCompliance()" id="comp-btn">Score with Claude →</button>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:1rem;">
+            <div class="card-title">Compliance scores</div>
+            <div id="comp-scores">
+              <div class="empty">
+                <div class="empty-icon">🛡️</div>
+                <div class="empty-title">No scores yet</div>
+                <div class="empty-sub">Fill in your system profile and run the scorer</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Claude's compliance analysis</div>
+            <div class="ai-box" id="comp-ai-output">
+              <span style="color:var(--muted);font-size:0.8125rem;font-weight:300;">Claude will score your system across explainability, fairness, robustness, data lineage, drift detection, and attribution depth.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ INSURER REPORT ═══════════ -->
+    <div id="page-report" class="page">
+      <div class="page-title">Insurer report generator</div>
+      <div class="page-sub">Generate a structured AI liability audit report ready to submit to insurers and regulators.</div>
+
+      <div class="grid2" style="margin-bottom:1rem;">
+        <div class="card">
+          <div class="card-title">Report configuration</div>
+          <div class="field">
+            <label>Organization name</label>
+            <input type="text" id="rep-org" placeholder="e.g. Meridian Financial Services Inc."/>
+          </div>
+          <div class="field">
+            <label>AI system name</label>
+            <input type="text" id="rep-system" placeholder="e.g. Loan Approval System v2.3"/>
+          </div>
+          <div class="field">
+            <label>Report period</label>
+            <input type="text" id="rep-period" placeholder="e.g. Q2 2026, Jan–Jun 2026"/>
+          </div>
+          <div class="field">
+            <label>Regulatory frameworks to include</label>
+            <select id="rep-framework" multiple style="height:80px;">
+              <option value="eu_ai_act" selected>EU AI Act</option>
+              <option value="cfpb">CFPB (Fair lending)</option>
+              <option value="hipaa">HIPAA</option>
+              <option value="eeoc">EEOC</option>
+              <option value="gdpr">GDPR</option>
+              <option value="soc2">SOC 2</option>
+            </select>
+            <div class="field-hint">Hold Ctrl/Cmd to select multiple</div>
+          </div>
+          <div class="field">
+            <label>Additional context for Claude</label>
+            <textarea id="rep-context" placeholder="Paste any decision logs, compliance scores, failure reports, or other context for Claude to include in the report..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="generateReport()" id="rep-btn">Generate report with Claude →</button>
+        </div>
+        <div class="card">
+          <div class="card-title">What's included</div>
+          <div style="display:flex;flex-direction:column;gap:0.75rem;font-size:0.8125rem;">
+            <div style="display:flex;gap:0.625rem;align-items:flex-start;">
+              <span class="pill pill-green" style="margin-top:1px;">✓</span>
+              <div><strong style="font-weight:500;">Executive summary</strong><br><span class="muted" style="font-weight:300;">Plain-language overview of the AI system and its risk profile</span></div>
+            </div>
+            <div style="display:flex;gap:0.625rem;align-items:flex-start;">
+              <span class="pill pill-green" style="margin-top:1px;">✓</span>
+              <div><strong style="font-weight:500;">Decision trail summary</strong><br><span class="muted" style="font-weight:300;">Volume, types, confidence distributions, and attribution depth</span></div>
+            </div>
+            <div style="display:flex;gap:0.625rem;align-items:flex-start;">
+              <span class="pill pill-green" style="margin-top:1px;">✓</span>
+              <div><strong style="font-weight:500;">Failure mode log</strong><br><span class="muted" style="font-weight:300;">Classified failures, severity ratings, and mitigations taken</span></div>
+            </div>
+            <div style="display:flex;gap:0.625rem;align-items:flex-start;">
+              <span class="pill pill-green" style="margin-top:1px;">✓</span>
+              <div><strong style="font-weight:500;">6-dimension compliance scores</strong><br><span class="muted" style="font-weight:300;">Explainability, fairness, robustness, lineage, drift, attribution</span></div>
+            </div>
+            <div style="display:flex;gap:0.625rem;align-items:flex-start;">
+              <span class="pill pill-green" style="margin-top:1px;">✓</span>
+              <div><strong style="font-weight:500;">Regulatory checklist</strong><br><span class="muted" style="font-weight:300;">Requirements met, gaps identified, remediation steps</span></div>
+            </div>
+            <div style="display:flex;gap:0.625rem;align-items:flex-start;">
+              <span class="pill pill-green" style="margin-top:1px;">✓</span>
+              <div><strong style="font-weight:500;">Coverage recommendation</strong><br><span class="muted" style="font-weight:500;">Claude's assessment of current insurability</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="report-output-wrap" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <div class="page-title" style="margin-bottom:0;">Generated Report</div>
+          <button class="btn btn-green" onclick="downloadReport()">↓ Download report</button>
+        </div>
+        <div id="report-output"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════ ANALYZE DECISION ═══════════ -->
+    <div id="page-analyze" class="page">
+      <div class="page-title">Analyze a decision</div>
+      <div class="page-sub">Paste any AI decision output and Claude will break down attribution, flag risks, and assess liability exposure.</div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Decision to analyze</div>
+          <div class="field">
+            <label>Paste the AI output</label>
+            <textarea id="analyze-input" style="min-height:200px;" placeholder="Paste the raw AI decision here — model output, decision rationale, confidence scores, any available feature weights, or just describe the decision in plain English..."></textarea>
+          </div>
+          <div class="field">
+            <label>What concerns you about this decision?</label>
+            <input type="text" id="analyze-concern" placeholder="e.g. seems biased, no explanation given, unexpected output, disputed by user..."/>
+          </div>
+          <button class="btn btn-primary" onclick="analyzeDecision()" id="analyze-btn">Analyze with Claude →</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Claude's analysis</div>
+          <div class="ai-box" id="analyze-output" style="min-height:300px;">
+            <span style="color:var(--muted);font-size:0.8125rem;font-weight:300;">Claude will identify attribution factors, flag potential liability risks, assess fairness concerns, and recommend audit actions.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ TRAIL VIEWER ═══════════ -->
+    <div id="page-trail" class="page">
+      <div class="page-title">Trail viewer</div>
+      <div class="page-sub">Browse and search the full decision audit trail for this session.</div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div style="display:flex;gap:0.75rem;align-items:center;">
+          <input type="text" id="trail-search" placeholder="Search by model, type, ID, or keyword..." style="flex:1;padding:0.5rem 0.75rem;border:1px solid var(--rule);border-radius:var(--radius);font-size:0.875rem;outline:none;" oninput="filterTrail()"/>
+          <select id="trail-filter" onchange="filterTrail()" style="padding:0.5rem 0.75rem;border:1px solid var(--rule);border-radius:var(--radius);font-size:0.875rem;background:#fff;outline:none;">
+            <option value="all">All types</option>
+            <option value="loan_approval">Loan approval</option>
+            <option value="fraud_detection">Fraud detection</option>
+            <option value="medical_triage">Medical triage</option>
+            <option value="hiring_screen">Hiring screening</option>
+            <option value="pricing">Pricing</option>
+            <option value="content_moderation">Content moderation</option>
+          </select>
+          <button class="btn btn-sm" onclick="exportTrail()">↓ Export CSV</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="trail-table-wrap">
+          <div class="empty">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">No decisions in trail</div>
+            <div class="empty-sub">Log decisions using the Decision logger to populate the trail</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+const state = {
+  decisions: [],
+  failures: [],
+  complianceScores: null,
+  totalDecisions: 0,
+  chartData: { labels: [], values: [] },
+  lastReport: ''
+};
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function navigate(page) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[onclick="navigate('${page}')"]`).classList.add('active');
+  document.getElementById(`page-${page}`).classList.add('active');
+  if (page === 'trail') renderTrailTable();
+  if (page === 'dashboard') updateDashboard();
+}
+
+// ═══════════════════════════════════════
+// CHART
+// ═══════════════════════════════════════
+let dashChart;
+function initChart() {
+  const ctx = document.getElementById('dash-chart').getContext('2d');
+  dashChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Decisions',
+        data: [],
+        borderColor: '#0B6E4F',
+        backgroundColor: 'rgba(11,110,79,0.07)',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: '#0B6E4F',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#6E6B62' } },
+        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#6E6B62' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function updateChart() {
+  const now = new Date();
+  const label = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  state.chartData.labels.push(label);
+  state.chartData.values.push(state.decisions.length);
+  if (state.chartData.labels.length > 12) {
+    state.chartData.labels.shift();
+    state.chartData.values.shift();
+  }
+  if (dashChart) {
+    dashChart.data.labels = state.chartData.labels;
+    dashChart.data.datasets[0].data = state.chartData.values;
+    dashChart.update('none');
+  }
+}
+
+// ═══════════════════════════════════════
+// CLAUDE API
+// ═══════════════════════════════════════
+async function callClaude(systemPrompt, userMessage, outputEl) {
+  outputEl.innerHTML = `<div class="ai-thinking"><div class="thinking-dots"><span></span><span></span><span></span></div><span style="font-size:0.8125rem;color:var(--muted);">Claude is analyzing...</span></div>`;
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMessage }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.map(b => b.text || '').join('') || 'No response received.';
+    outputEl.textContent = text;
+    return text;
+  } catch (err) {
+    outputEl.textContent = 'Error reaching Claude API. Please check your connection.';
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════
+// DECISION LOGGER
+// ═══════════════════════════════════════
+async function logDecision() {
+  const model = document.getElementById('log-model').value.trim();
+  const type = document.getElementById('log-type').value;
+  const input = document.getElementById('log-input').value.trim();
+  const output = document.getElementById('log-output').value.trim();
+  const confidence = document.getElementById('log-confidence').value;
+  const customId = document.getElementById('log-id').value.trim();
+
+  if (!model || !input || !output) {
+    showToast('Fill in model name, input, and output fields.', 'error');
+    return;
+  }
+
+  const id = customId || `DEC-${Date.now().toString(36).toUpperCase()}`;
+  const btn = document.getElementById('log-btn');
+  btn.disabled = true;
+  btn.textContent = 'Analyzing...';
+
+  const systemPrompt = `You are Veridian, an AI audit platform. Analyze AI decisions for liability, attribution, and compliance.
+When given a decision, respond with:
+1. ATTRIBUTION: What key factors likely drove this decision (infer from context)?
+2. RISK FLAGS: Any fairness, bias, or liability concerns?
+3. COMPLIANCE NOTES: Relevant regulatory considerations (EU AI Act, CFPB, EEOC, etc.)?
+4. AUDIT RATING: Low / Medium / High risk (one line reason)
+5. RECOMMENDED ACTIONS: Specific next steps for this decision.
+Be concise, specific, and actionable. Format clearly with these exact headers.`;
+
+  const userMsg = `Model: ${model}
+Decision type: ${type}
+Confidence: ${confidence || 'not provided'}%
+Input/context: ${input}
+Model output/decision: ${output}`;
+
+  const aiBox = document.getElementById('log-ai-output');
+  const analysis = await callClaude(systemPrompt, userMsg, aiBox);
+
+  const decision = {
+    id, model, type, input, output,
+    confidence: confidence || '—',
+    timestamp: new Date().toISOString(),
+    analysis: analysis || '—',
+    risk: inferRisk(analysis)
+  };
+
+  state.decisions.unshift(decision);
+  state.totalDecisions++;
+  updateCounter();
+  updateChart();
+  renderStructuredRecord(decision);
+  renderLogTable();
+  updateDashboard();
+  updateTrailDash();
+  checkForFailures(decision, analysis);
+
+  btn.disabled = false;
+  btn.textContent = 'Log & audit with Claude →';
+  showToast(`Decision ${id} logged and audited.`);
+}
+
+function inferRisk(analysis) {
+  if (!analysis) return 'medium';
+  const lower = analysis.toLowerCase();
+  if (lower.includes('high risk') || lower.includes('critical') || lower.includes('discriminat')) return 'high';
+  if (lower.includes('low risk') || lower.includes('no concerns')) return 'low';
+  return 'medium';
+}
+
+function renderStructuredRecord(d) {
+  const el = document.getElementById('log-structured');
+  el.innerHTML = `
+    <table class="data-table">
+      <tr><td style="color:var(--muted);width:120px;">ID</td><td><span class="mono">${d.id}</span></td></tr>
+      <tr><td style="color:var(--muted);">Model</td><td>${d.model}</td></tr>
+      <tr><td style="color:var(--muted);">Type</td><td>${d.type.replace('_',' ')}</td></tr>
+      <tr><td style="color:var(--muted);">Confidence</td><td><span class="mono">${d.confidence}%</span></td></tr>
+      <tr><td style="color:var(--muted);">Risk</td><td><span class="pill pill-${d.risk === 'high' ? 'red' : d.risk === 'low' ? 'green' : 'amber'}">${d.risk}</span></td></tr>
+      <tr><td style="color:var(--muted);">Logged</td><td><span class="mono" style="font-size:0.75rem;">${new Date(d.timestamp).toLocaleString()}</span></td></tr>
+    </table>`;
+}
+
+function renderLogTable() {
+  const wrap = document.getElementById('log-table-wrap');
+  if (!state.decisions.length) {
+    wrap.innerHTML = `<div class="empty"><div class="empty-icon">📝</div><div class="empty-title">No decisions logged yet</div></div>`;
+    return;
+  }
+  wrap.innerHTML = `<table class="data-table">
+    <thead><tr><th>ID</th><th>Model</th><th>Type</th><th>Confidence</th><th>Risk</th><th>Logged</th></tr></thead>
+    <tbody>${state.decisions.map(d => `
+      <tr>
+        <td><span class="mono" style="font-size:0.75rem;">${d.id}</span></td>
+        <td>${d.model}</td>
+        <td>${d.type.replace(/_/g,' ')}</td>
+        <td><span class="mono">${d.confidence}${d.confidence !== '—' ? '%' : ''}</span></td>
+        <td><span class="pill pill-${d.risk === 'high' ? 'red' : d.risk === 'low' ? 'green' : 'amber'}">${d.risk}</span></td>
+        <td style="color:var(--muted);font-size:0.75rem;">${new Date(d.timestamp).toLocaleTimeString()}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function clearLog() {
+  if (!confirm('Clear all logged decisions?')) return;
+  state.decisions = [];
+  renderLogTable();
+  updateDashboard();
+  showToast('Decision log cleared.');
+}
+
+// ═══════════════════════════════════════
+// FAILURE DETECTOR
+// ═══════════════════════════════════════
+async function detectFailure() {
+  const model = document.getElementById('fail-model').value.trim();
+  const desc = document.getElementById('fail-description').value.trim();
+  const when = document.getElementById('fail-when').value.trim();
+
+  if (!desc) { showToast('Describe the behavior first.', 'error'); return; }
+
+  const btn = document.getElementById('fail-btn');
+  btn.disabled = true;
+  btn.textContent = 'Classifying...';
+
+  const systemPrompt = `You are Veridian's failure classification engine. Classify AI system failure modes for liability auditing.
+Respond with exactly these sections:
+FAILURE TYPE: (one of: Distribution Shift, Confidence Miscalibration, Demographic Bias, Out-of-Distribution Input, Concept Drift, Adversarial Vulnerability, Data Poisoning, Latency/Reliability, Hallucination, Other)
+SEVERITY: Critical / High / Medium / Low
+EXPLANATION: 2-3 sentences on what's happening technically.
+LIABILITY RISK: What this means for insurance coverage (1-2 sentences).
+IMMEDIATE ACTIONS: 3 bullet points of concrete next steps.
+MONITORING: What to watch going forward (1-2 sentences).`;
+
+  const userMsg = `Model/system: ${model || 'unspecified'}
+Observed behavior: ${desc}
+When it started: ${when || 'unknown'}`;
+
+  const aiBox = document.getElementById('fail-ai-output');
+  const analysis = await callClaude(systemPrompt, userMsg, aiBox);
+
+  if (analysis) {
+    const severity = analysis.toLowerCase().includes('critical') ? 'critical' :
+                     analysis.toLowerCase().includes('high') ? 'high' :
+                     analysis.toLowerCase().includes('medium') ? 'medium' : 'low';
+
+    const failureType = analysis.match(/FAILURE TYPE:\s*(.+)/i)?.[1]?.trim() || 'Unknown';
+
+    const failure = {
+      id: `FAIL-${Date.now().toString(36).toUpperCase()}`,
+      model: model || 'unspecified',
+      type: failureType,
+      severity,
+      description: desc,
+      analysis,
+      timestamp: new Date().toISOString()
+    };
+    state.failures.unshift(failure);
+    renderFailureList();
+    updateFailBadge();
+    updateDashboard();
+    showToast(`Failure classified: ${failureType} (${severity})`, severity === 'critical' || severity === 'high' ? 'error' : 'success');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Classify failure with Claude →';
+}
+
+function checkForFailures(decision, analysis) {
+  if (!analysis) return;
+  if (analysis.toLowerCase().includes('high risk') || analysis.toLowerCase().includes('critical')) {
+    state.failures.unshift({
+      id: `AUTO-${Date.now().toString(36).toUpperCase()}`,
+      model: decision.model,
+      type: 'Auto-detected: High risk decision',
+      severity: 'high',
+      description: `Auto-flagged during decision audit for ${decision.id}`,
+      analysis: `Auto-detected from decision log. Claude flagged this as high risk.\n\n${analysis}`,
+      timestamp: new Date().toISOString()
+    });
+    renderFailureList();
+    updateFailBadge();
+  }
+}
+
+function renderFailureList() {
+  const el = document.getElementById('fail-list');
+  if (!state.failures.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🛡️</div><div class="empty-title">No failures detected yet</div></div>`;
+    return;
+  }
+  el.innerHTML = state.failures.map(f => `
+    <div class="fail-card">
+      <div class="fail-icon" style="background:${f.severity==='critical'||f.severity==='high'?'var(--red-bg)':f.severity==='medium'?'var(--amber-bg)':'var(--green-bg)'};color:${f.severity==='critical'||f.severity==='high'?'var(--red)':f.severity==='medium'?'var(--amber)':'var(--green)'}">
+        ${f.severity==='critical'||f.severity==='high'?'⚠':'○'}
+      </div>
+      <div class="fail-info">
+        <div class="fail-title">${f.type} — <span class="mono" style="font-size:0.75rem;">${f.model}</span></div>
+        <div class="fail-desc">${f.description.length > 120 ? f.description.slice(0,120)+'...' : f.description}</div>
+        <div style="margin-top:6px;display:flex;gap:6px;align-items:center;">
+          <span class="pill pill-${f.severity==='critical'||f.severity==='high'?'red':f.severity==='medium'?'amber':'green'}">${f.severity}</span>
+          <span class="mono muted" style="font-size:0.6875rem;">${f.id}</span>
+          <span class="muted" style="font-size:0.75rem;">${new Date(f.timestamp).toLocaleTimeString()}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function updateFailBadge() {
+  const count = state.failures.length;
+  document.getElementById('fail-badge').textContent = count;
+  document.getElementById('fail-count-badge').textContent = `${count} active`;
+}
+
+// ═══════════════════════════════════════
+// COMPLIANCE SCORER
+// ═══════════════════════════════════════
+async function scoreCompliance() {
+  const name = document.getElementById('comp-name').value.trim();
+  const industry = document.getElementById('comp-industry').value;
+  const decisions = document.getElementById('comp-decisions').value.trim();
+  const monitoring = document.getElementById('comp-monitoring').value.trim();
+  const risk = document.getElementById('comp-risk').value.trim();
+
+  if (!name || !decisions) { showToast('Fill in system name and decisions.', 'error'); return; }
+
+  const btn = document.getElementById('comp-btn');
+  btn.disabled = true;
+  btn.textContent = 'Scoring...';
+
+  const systemPrompt = `You are Veridian's compliance scoring engine. Score AI systems for liability insurance eligibility.
+
+Score the system 0-100 on exactly these six dimensions, then provide analysis:
+
+SCORES (respond with exactly this format, one per line):
+EXPLAINABILITY: [0-100]
+FAIRNESS: [0-100]
+ROBUSTNESS: [0-100]
+DATA_LINEAGE: [0-100]
+DRIFT_DETECTION: [0-100]
+ATTRIBUTION_DEPTH: [0-100]
+
+OVERALL: [0-100]
+INSURANCE_STATUS: [Insurable / Conditionally insurable / Not currently insurable]
+
+ANALYSIS:
+[3-4 sentences on overall posture]
+
+GAPS:
+[Top 3 gaps blocking better coverage, as bullet points]
+
+RECOMMENDATIONS:
+[Top 3 specific actions to improve scores, as bullet points]`;
+
+  const userMsg = `System name: ${name}
+Industry: ${industry}
+Decisions made: ${decisions}
+Existing monitoring: ${monitoring || 'None described'}
+Known risks: ${risk || 'None specified'}
+Decisions logged this session: ${state.decisions.length}
+Failures detected: ${state.failures.length}`;
+
+  const aiBox = document.getElementById('comp-ai-output');
+  const analysis = await callClaude(systemPrompt, userMsg, aiBox);
+
+  if (analysis) {
+    const scores = parseScores(analysis);
+    state.complianceScores = { ...scores, system: name, timestamp: new Date().toISOString() };
+    renderComplianceScores(scores);
+    updateDashboard();
+    showToast('Compliance scoring complete.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Score with Claude →';
+}
+
+function parseScores(text) {
+  const extract = (key) => {
+    const match = text.match(new RegExp(key + ':\\s*(\\d+)', 'i'));
+    return match ? parseInt(match[1]) : 50;
+  };
+  return {
+    explainability: extract('EXPLAINABILITY'),
+    fairness: extract('FAIRNESS'),
+    robustness: extract('ROBUSTNESS'),
+    data_lineage: extract('DATA_LINEAGE'),
+    drift_detection: extract('DRIFT_DETECTION'),
+    attribution_depth: extract('ATTRIBUTION_DEPTH'),
+    overall: extract('OVERALL'),
+    status: text.match(/INSURANCE_STATUS:\s*(.+)/i)?.[1]?.trim() || 'Unknown'
+  };
+}
+
+function renderComplianceScores(scores) {
+  const dims = [
+    { key: 'explainability', label: 'Explainability' },
+    { key: 'fairness', label: 'Fairness' },
+    { key: 'robustness', label: 'Robustness' },
+    { key: 'data_lineage', label: 'Data lineage' },
+    { key: 'drift_detection', label: 'Drift detection' },
+    { key: 'attribution_depth', label: 'Attribution depth' }
+  ];
+  const el = document.getElementById('comp-scores');
+  const statusPill = scores.status.toLowerCase().includes('not') ? 'pill-red' :
+                     scores.status.toLowerCase().includes('conditional') ? 'pill-amber' : 'pill-green';
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:1.75rem;font-weight:500;line-height:1;">${scores.overall}<span style="font-size:1rem;color:var(--muted);font-weight:300;">/100</span></div>
+        <div style="font-size:0.75rem;color:var(--muted);font-weight:300;">overall audit score</div>
+      </div>
+      <span class="pill ${statusPill}" style="font-size:0.75rem;">${scores.status}</span>
+    </div>
+    ${dims.map(d => {
+      const val = scores[d.key];
+      const color = val >= 80 ? '#0B6E4F' : val >= 60 ? '#C97A20' : '#8B2020';
+      return `<div class="score-row">
+        <div class="score-name">${d.label}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${val}%;background:${color};"></div></div>
+        <div class="score-num">${val}</div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ═══════════════════════════════════════
+// INSURER REPORT
+// ═══════════════════════════════════════
+async function generateReport() {
+  const org = document.getElementById('rep-org').value.trim();
+  const system = document.getElementById('rep-system').value.trim();
+  const period = document.getElementById('rep-period').value.trim();
+  const context = document.getElementById('rep-context').value.trim();
+  const frameworkEl = document.getElementById('rep-framework');
+  const frameworks = Array.from(frameworkEl.selectedOptions).map(o => o.text).join(', ');
+
+  if (!org || !system) { showToast('Fill in organization and system name.', 'error'); return; }
+
+  const btn = document.getElementById('rep-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating report...';
+
+  const systemPrompt = `You are Veridian's insurer report generator. Generate a formal AI liability audit report for submission to insurers and regulators.
+
+Structure your response with these exact sections using === SECTION NAME === headers:
+
+=== EXECUTIVE SUMMARY ===
+=== SYSTEM DESCRIPTION ===
+=== DECISION TRAIL SUMMARY ===
+=== FAILURE MODE LOG ===
+=== COMPLIANCE SCORES ===
+=== REGULATORY CHECKLIST ===
+=== COVERAGE GAPS ===
+=== REMEDIATION PLAN ===
+=== COVERAGE RECOMMENDATION ===
+
+Write formally. Be specific with numbers. Flag gaps clearly. End with a clear coverage recommendation.`;
+
+  const scoresSummary = state.complianceScores
+    ? `Compliance scores: Overall ${state.complianceScores.overall}/100, Explainability ${state.complianceScores.explainability}, Fairness ${state.complianceScores.fairness}, Robustness ${state.complianceScores.robustness}, Data Lineage ${state.complianceScores.data_lineage}, Drift Detection ${state.complianceScores.drift_detection}, Attribution ${state.complianceScores.attribution_depth}. Insurance status: ${state.complianceScores.status}.`
+    : 'No compliance scores available.';
+
+  const userMsg = `Organization: ${org}
+AI System: ${system}
+Report period: ${period || 'Current period'}
+Regulatory frameworks: ${frameworks}
+Decisions logged: ${state.decisions.length}
+Failure modes detected: ${state.failures.length} (${state.failures.filter(f=>f.severity==='critical'||f.severity==='high').length} high/critical)
+${scoresSummary}
+Additional context: ${context || 'None provided'}
+Logged decision types: ${[...new Set(state.decisions.map(d=>d.type))].join(', ') || 'none'}`;
+
+  const tempBox = document.createElement('div');
+  document.body.appendChild(tempBox);
+  const report = await callClaude(systemPrompt, userMsg, tempBox);
+  document.body.removeChild(tempBox);
+
+  if (report) {
+    state.lastReport = report;
+    renderReport(report, org, system, period);
+    document.getElementById('report-output-wrap').style.display = 'block';
+    showToast('Report generated successfully.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Generate report with Claude →';
+}
+
+function renderReport(text, org, system, period) {
+  const sections = text.split(/===\s*(.+?)\s*===/g).filter(s => s.trim());
+  const el = document.getElementById('report-output');
+
+  let html = `<div class="report-block">
+    <div class="report-header">
+      <div class="report-header-title">AI LIABILITY AUDIT REPORT</div>
+      <span class="pill pill-muted mono">${new Date().toLocaleDateString()}</span>
+    </div>
+    <div style="padding:1.25rem;background:#fff;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;border-bottom:1px solid var(--rule);">
+      <div><div style="font-size:0.7rem;font-family:var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">Organization</div><div style="font-size:0.875rem;font-weight:500;">${org}</div></div>
+      <div><div style="font-size:0.7rem;font-family:var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">System</div><div style="font-size:0.875rem;font-weight:500;">${system}</div></div>
+      <div><div style="font-size:0.7rem;font-family:var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">Period</div><div style="font-size:0.875rem;font-weight:500;">${period || 'Current period'}</div></div>
+    </div>
+  </div>`;
+
+  for (let i = 0; i < sections.length; i += 2) {
+    const title = sections[i];
+    const content = sections[i + 1] || '';
+    if (title && content) {
+      html += `<div class="report-block">
+        <div class="report-header">
+          <div class="report-header-title">${title}</div>
+        </div>
+        <div class="report-body">${content.trim()}</div>
+      </div>`;
+    }
+  }
+
+  el.innerHTML = html;
+}
+
+function downloadReport() {
+  if (!state.lastReport) return;
+  const blob = new Blob([state.lastReport], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `veridian-audit-report-${Date.now()}.txt`;
+  a.click();
+}
+
+// ═══════════════════════════════════════
+// ANALYZE DECISION
+// ═══════════════════════════════════════
+async function analyzeDecision() {
+  const input = document.getElementById('analyze-input').value.trim();
+  const concern = document.getElementById('analyze-concern').value.trim();
+  if (!input) { showToast('Paste a decision to analyze.', 'error'); return; }
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.textContent = 'Analyzing...';
+
+  const systemPrompt = `You are Veridian's decision analysis engine. Perform a deep liability audit of an AI decision.
+
+Structure your response with these sections:
+
+ATTRIBUTION ANALYSIS
+What factors likely drove this decision. Identify the primary inputs and their relative importance.
+
+FAIRNESS ASSESSMENT
+Any concerns about disparate impact, protected characteristics, or demographic bias.
+
+LIABILITY EXPOSURE
+Concrete legal and financial risk this decision creates. Which regulations are implicated.
+
+EXPLAINABILITY RATING
+Can this decision be explained to an affected person? Grade: Excellent / Good / Poor / Unacceptable.
+
+CONTESTABILITY
+Could this decision withstand a regulatory challenge or lawsuit? What evidence would be needed.
+
+RECOMMENDED ACTIONS
+Specific steps to reduce liability exposure from this specific decision.`;
+
+  const userMsg = `Decision/output to analyze:
+${input}
+
+Specific concern: ${concern || 'General audit review'}`;
+
+  const aiBox = document.getElementById('analyze-output');
+  await callClaude(systemPrompt, userMsg, aiBox);
+
+  btn.disabled = false;
+  btn.textContent = 'Analyze with Claude →';
+}
+
+// ═══════════════════════════════════════
+// TRAIL VIEWER
+// ═══════════════════════════════════════
+function renderTrailTable() {
+  const search = document.getElementById('trail-search').value.toLowerCase();
+  const filter = document.getElementById('trail-filter').value;
+  const wrap = document.getElementById('trail-table-wrap');
+
+  let filtered = state.decisions.filter(d => {
+    const matchFilter = filter === 'all' || d.type === filter;
+    const matchSearch = !search ||
+      d.id.toLowerCase().includes(search) ||
+      d.model.toLowerCase().includes(search) ||
+      d.type.toLowerCase().includes(search) ||
+      d.input.toLowerCase().includes(search) ||
+      d.output.toLowerCase().includes(search);
+    return matchFilter && matchSearch;
+  });
+
+  if (!filtered.length) {
+    wrap.innerHTML = state.decisions.length
+      ? `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">No results</div><div class="empty-sub">Try a different search or filter</div></div>`
+      : `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">No decisions in trail</div><div class="empty-sub">Log decisions using the Decision logger</div></div>`;
+    return;
+  }
+
+  wrap.innerHTML = `<table class="data-table">
+    <thead><tr><th>ID</th><th>Model</th><th>Type</th><th>Input (excerpt)</th><th>Output (excerpt)</th><th>Confidence</th><th>Risk</th><th>Time</th></tr></thead>
+    <tbody>${filtered.map(d => `
+      <tr>
+        <td><span class="mono" style="font-size:0.7rem;">${d.id}</span></td>
+        <td style="font-size:0.8rem;">${d.model}</td>
+        <td style="font-size:0.8rem;">${d.type.replace(/_/g,' ')}</td>
+        <td style="font-size:0.75rem;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.input.slice(0,60)}${d.input.length>60?'...':''}</td>
+        <td style="font-size:0.75rem;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.output.slice(0,60)}${d.output.length>60?'...':''}</td>
+        <td><span class="mono" style="font-size:0.8rem;">${d.confidence}${d.confidence!=='—'?'%':''}</span></td>
+        <td><span class="pill pill-${d.risk==='high'?'red':d.risk==='low'?'green':'amber'}">${d.risk}</span></td>
+        <td style="color:var(--muted);font-size:0.75rem;font-family:var(--f-mono);">${new Date(d.timestamp).toLocaleTimeString()}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function filterTrail() { renderTrailTable(); }
+
+function exportTrail() {
+  if (!state.decisions.length) { showToast('No decisions to export.', 'error'); return; }
+  const header = 'ID,Model,Type,Confidence,Risk,Timestamp\n';
+  const rows = state.decisions.map(d =>
+    `${d.id},${d.model},${d.type},${d.confidence},${d.risk},${d.timestamp}`
+  ).join('\n');
+  const blob = new Blob([header + rows], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'veridian-decision-trail.csv';
+  a.click();
+  showToast('Trail exported as CSV.');
+}
+
+// ═══════════════════════════════════════
+// DASHBOARD UPDATE
+// ═══════════════════════════════════════
+function updateDashboard() {
+  document.getElementById('dash-decisions').textContent = state.decisions.length;
+  document.getElementById('dash-failures').textContent = state.failures.length;
+
+  if (state.complianceScores) {
+    document.getElementById('dash-score').textContent = state.complianceScores.overall + '/100';
+    const statusPill = state.complianceScores.status.toLowerCase().includes('not') ? 'pill-red' :
+                       state.complianceScores.status.toLowerCase().includes('conditional') ? 'pill-amber' : 'pill-green';
+    document.getElementById('dash-ready').innerHTML = `<span class="pill ${statusPill}" style="font-size:0.75rem;">${state.complianceScores.status}</span>`;
+
+    const dims = [
+      { key: 'explainability', label: 'Explainability' },
+      { key: 'fairness', label: 'Fairness' },
+      { key: 'robustness', label: 'Robustness' },
+      { key: 'attribution_depth', label: 'Attribution' }
+    ];
+    document.getElementById('dash-scores-preview').innerHTML = dims.map(d => {
+      const val = state.complianceScores[d.key];
+      const color = val >= 80 ? '#0B6E4F' : val >= 60 ? '#C97A20' : '#8B2020';
+      return `<div class="score-row">
+        <div class="score-name" style="font-size:0.75rem;">${d.label}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${val}%;background:${color};"></div></div>
+        <div class="score-num" style="font-size:0.75rem;">${val}</div>
+      </div>`;
+    }).join('');
+  }
+
+  if (state.failures.length) {
+    document.getElementById('dash-fail-preview').innerHTML = state.failures.slice(0,3).map(f => `
+      <div style="display:flex;gap:0.625rem;align-items:flex-start;padding:0.625rem 0;border-bottom:1px solid var(--rule);">
+        <span class="pill pill-${f.severity==='critical'||f.severity==='high'?'red':f.severity==='medium'?'amber':'green'}" style="flex-shrink:0;">${f.severity}</span>
+        <div>
+          <div style="font-size:0.8125rem;font-weight:500;">${f.type}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">${f.model}</div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+function updateTrailDash() {
+  const el = document.getElementById('dash-trail');
+  if (!state.decisions.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No decisions logged yet</div><div class="empty-sub">Use the Decision logger to start auditing</div></div>`;
+    return;
+  }
+  el.innerHTML = state.decisions.slice(0,8).map(d => `
+    <div class="trail-item">
+      <div class="trail-dot ${d.risk==='high'?'td-red':d.risk==='low'?'td-green':'td-amber'}"></div>
+      <div class="trail-body">
+        <div class="trail-id">${d.id} · ${d.model}</div>
+        <div class="trail-desc">${d.type.replace(/_/g,' ')} · confidence ${d.confidence}${d.confidence!=='—'?'%':''} · ${d.risk} risk</div>
+      </div>
+      <div class="trail-time">${new Date(d.timestamp).toLocaleTimeString()}</div>
+    </div>`).join('');
+}
+
+function updateCounter() {
+  document.getElementById('decision-counter').textContent = `${state.decisions.length} decision${state.decisions.length !== 1 ? 's' : ''} audited`;
+}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function showToast(msg, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  if (type === 'error') toast.style.background = 'var(--red)';
+  toast.innerHTML = `<span>${type === 'success' ? '✓' : '!'}</span> ${msg}`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(10px)'; toast.style.transition = 'all 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('load', () => {
+  initChart();
+});
+</script>
+</body>
 </html>
